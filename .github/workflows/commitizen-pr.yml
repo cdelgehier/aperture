@@ -1,0 +1,28 @@
+---
+name: Commitizen PR Check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-pr:
+    name: Check all commits in PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Check all commits in PR
+        run: |
+          git fetch origin ${{ github.base_ref }}
+          uvx --from commitizen cz check --rev-range origin/${{ github.base_ref }}..HEAD
