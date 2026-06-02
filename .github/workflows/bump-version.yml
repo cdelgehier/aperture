@@ -69,9 +69,9 @@ jobs:
       - name: Update annotated tag with changelog
         if: steps.bump.outputs.skip == 'false'
         run: |
-          LATEST_TAG=$(git describe --tags --abbrev=0)
-          git tag -d "$LATEST_TAG"
-          git tag -a "$LATEST_TAG" -m "${{ steps.changelog.outputs.changelog }}"
+          TAG="v${{ steps.bump.outputs.version }}"
+          git tag -d "$TAG" || true
+          git tag -a "$TAG" -m "${{ steps.changelog.outputs.changelog }}"
 
       - name: Push changes and tags
         if: steps.bump.outputs.skip == 'false'
@@ -88,4 +88,3 @@ jobs:
             echo "Changelog updated" >> "$GITHUB_STEP_SUMMARY"
             echo "Tag created: v${{ steps.bump.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
           fi
-
