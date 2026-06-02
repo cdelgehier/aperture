@@ -1,0 +1,62 @@
+"""Tests for the FastAPI app factory and server entrypoint."""
+
+from unittest.mock import patch
+
+import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+
+from aperture.main import create_app, main
+from aperture.settings import Settings
+
+
+def test_create_app_returns_fastapi_app(settings: Settings) -> None:
+    """The app factory returns a FastAPI app."""
+
+    app = create_app(settings)
+
+    assert isinstance(app, FastAPI)
+    assert app.title == "Aperture"
+
+
+def test_lifespan_binds_settings(settings: Settings) -> None:
+    """The app lifespan stores settings in app state."""
+
+    app = create_app(settings)
+
+    with TestClient(app):
+        assert app.state.settings is settings
+
+
+@pytest.mark.parametrize(
+    ("listen_addr", "port", "log_level"),
+    [
+        ("0.0.0.0", "9000", "debug"),
+        ("127.0.0.1", "8100", "info"),
+    ],
+)
+def test_main_runs_uvicorn_with_settings(
+    monkeypatch: pytest.MonkeyPatch,
+    listen_addr: str,
+    port: str,
+    log_level: str,
+) -> None:
+    """The CLI entrypoint starts Uvicorn with configured values."""
+
+    monkeypatch.setenv("APT_LISTEN_ADDR", listen_addr)
+    monkeypatch.setenv("APT_PORT", port)
+    monkeypatch.setenv("APT_LOG_LEVEL", log_level)
+
+    with (
+        patch("aperture.main.configure_logging") as configure_logging,
+        patch("aperture.main.uvicorn.run") as run,
+    ):
+        main()
+
+    configure_logging.assert_called_once_with(log_level)
+    run.assert_called_once_with(
+        "aperture.main:app",
+        host=listen_addr,
+        port=int(port),
+        log_level=log_level,
+    )

@@ -1,0 +1,77 @@
+version: "3"
+
+tasks:
+  install:
+    desc: Install all dependencies, including dev dependencies
+    cmd: uv sync --all-groups
+    sources:
+      - pyproject.toml
+      - uv.lock
+
+  up:
+    desc: Run the Aperture API locally
+    cmd: uv run aperture
+
+  "pre-commit:install":
+    desc: Install pre-commit hooks
+    deps:
+      - install
+    cmds:
+      - uv run pre-commit install
+      - uv run pre-commit install --hook-type commit-msg
+
+  "pre-commit:run":
+    desc: Run pre-commit hooks on staged files
+    cmd: uv run pre-commit run
+
+  "pre-commit:all":
+    desc: Run pre-commit hooks on all files
+    cmd: uv run pre-commit run --all-files
+
+  "pre-commit:autoupdate":
+    desc: Update pre-commit hook revisions
+    cmd: uv run pre-commit autoupdate
+
+  lint:
+    desc: Run ruff linter
+    cmd: uv run ruff check aperture tests
+
+  "type:check":
+    desc: Run ty type checker
+    cmd: uv run ty check aperture tests
+
+  "fmt:fix":
+    desc: Format code with ruff
+    cmd: uv run ruff format aperture tests
+
+  "fmt:check":
+    desc: Check formatting without applying changes
+    cmd: uv run ruff format --check aperture tests
+
+  "test:py":
+    desc: Run tests with coverage
+    cmd: uv run pytest
+
+  "test:helm":
+    desc: Run Helm tests when the chart exists
+    cmds:
+      - |
+        if [ -f helm/aperture/Chart.yaml ]; then
+          helm unittest --strict helm/aperture
+        else
+          echo "No Helm chart yet; skipping Helm tests"
+        fi
+
+  test:
+    desc: Run all test suites
+    cmds:
+      - task: "test:py"
+      - task: "test:helm"
+
+  ci:
+    desc: Run local CI checks
+    cmds:
+      - task: lint
+      - task: "type:check"
+      - task: "fmt:check"
+      - task: test

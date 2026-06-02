@@ -1,0 +1,69 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aperture"
+version = "0.1.0"
+description = "Internal REST API for dynamic-select widgets."
+authors = [
+    {name = "Cedric DELGEHIER", email = "cedric.delgehier@gmail.com"},
+]
+requires-python = ">=3.14"
+dependencies = [
+    "aioboto3>=15.0.0",
+    "fastapi>=0.115.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings[yaml]>=2.0.0",
+    "redis>=5.0.0",
+    "structlog>=25.0.0",
+    "uvicorn[standard]>=0.32.0",
+]
+
+[project.scripts]
+aperture = "aperture.main:main"
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.1.0"
+version_provider = "pep621"
+tag_format = "v$version"
+update_changelog_on_bump = true
+major_version_zero = true
+version_files = [
+    "pyproject.toml:^version",
+    "aperture/version.py:^__version__",
+]
+
+[dependency-groups]
+dev = [
+    "commitizen>=3.0.0",
+    "httpx2>=0.28.0",
+    "pre-commit>=4.0.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=1.0.0",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.13.0",
+    "ty>=0.0.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+    "aperture/plugins",
+]
+pythonpath = ["."]
+asyncio_mode = "auto"
+addopts = "-v --cov=aperture --cov-report=term-missing"
+
+[tool.ruff]
+line-length = 88
+target-version = "py314"
+fix = true
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "N", "UP", "B", "C4", "SIM"]
+ignore = ["E501"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["aperture"]
