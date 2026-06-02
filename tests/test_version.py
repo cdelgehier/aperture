@@ -1,9 +1,14 @@
 """Tests for package version data."""
 
+import tomllib
+from pathlib import Path
+
 from aperture.version import __version__
 
 
-def test_version_matches_initial_project_version() -> None:
-    """The package starts at version 0.1.0."""
+def test_version_matches_project_metadata() -> None:
+    """The package version follows pyproject metadata."""
 
-    assert __version__ == "0.1.0"
+    pyproject = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+
+    assert __version__ == pyproject["project"]["version"]
