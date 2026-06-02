@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "aperture"
-version = "0.2.0"
+version = "0.2.1"
 description = "Internal REST API for dynamic-select widgets."
 authors = [
     {name = "Cedric DELGEHIER", email = "cedric.delgehier@gmail.com"},
@@ -25,7 +25,7 @@ aperture = "aperture.main:main"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.2.0"
+version = "0.2.1"
 version_provider = "pep621"
 tag_format = "v$version"
 update_changelog_on_bump = true

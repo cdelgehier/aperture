@@ -1,3 +1,9 @@
+## v0.2.1 (2026-06-02)
+
+### Fix
+
+- compare package version to project metadata
+
 ## v0.2.0 (2026-06-02)
 
 ### Feat
