@@ -1,0 +1,76 @@
+---
+name: Create Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  create-release:
+    name: Build and create GitHub Release
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Build package
+        run: uv build
+
+      - name: Extract changelog section
+        id: changelog
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+
+          CHANGELOG_SECTION=$(awk -v tag="$TAG" '
+            /^## v/ {
+              if (found) exit
+              if ($2 == tag) found=1
+              next
+            }
+            found {print}
+          ' CHANGELOG.md)
+
+          if [ -z "$CHANGELOG_SECTION" ]; then
+            CHANGELOG_SECTION=$(cat CHANGELOG.md)
+          fi
+
+          echo "$CHANGELOG_SECTION" > release_notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ steps.version.outputs.tag }}
+          body_path: release_notes.md
+          tag_name: ${{ steps.version.outputs.tag }}
+          draft: false
+          prerelease: false
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "GitHub Release created for version ${{ steps.version.outputs.tag }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Release URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Install: pip install ${{ github.server_url }}/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/aperture-${{ steps.version.outputs.version }}-py3-none-any.whl" >> "$GITHUB_STEP_SUMMARY"
