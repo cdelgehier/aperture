@@ -72,3 +72,32 @@ Selection routes must return `list[SelectItem]`.
 - plugin prefix
 - shared cache store
 - logger
+
+## Install A Plugin In The Image
+
+External plugins are Python modules. The runtime image must contain the plugin
+code so `module` can be imported at startup.
+
+Build your own image from the published Aperture image:
+
+```dockerfile
+FROM ghcr.io/cdelgehier/aperture:0.5.1
+
+COPY aperture_plugin_gitlab /app/aperture_plugin_gitlab
+```
+
+Then configure the plugin module:
+
+```yaml
+plugins:
+  gitlab:
+    enabled: true
+    module: aperture_plugin_gitlab.main
+    prefix: /gitlab
+    config:
+      gitlab_url: https://gitlab.example.com
+      token_env_var: GITLAB_PAT
+```
+
+If the plugin has dependencies, install them in the derived image. Keep secrets
+outside the image.

@@ -1,5 +1,8 @@
 version: "3"
 
+vars:
+  IMAGE: ghcr.io/cdelgehier/aperture
+
 tasks:
   install:
     desc: Install all dependencies, including dev dependencies
@@ -62,6 +65,16 @@ tasks:
         else
           echo "No Helm chart yet; skipping Helm tests"
         fi
+
+  "docker:build":
+    desc: Build the Aperture image locally with the dev tag
+    cmd: docker build -f docker/Dockerfile -t {{.IMAGE}}:dev .
+
+  "test:docker":
+    desc: Test the local Aperture image with container-structure-test
+    deps:
+      - "docker:build"
+    cmd: container-structure-test test --image {{.IMAGE}}:dev --config docker/container-structure-test.yaml
 
   "helm:docs":
     desc: Generate Helm chart documentation

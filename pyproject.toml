@@ -33,7 +33,14 @@ major_version_zero = true
 version_files = [
     "pyproject.toml:^version",
     "aperture/version.py:^__version__",
+    "helm/aperture/Chart.yaml:^version",
     "helm/aperture/Chart.yaml:^appVersion",
+    "helm/aperture/README.md.gotmpl:ghcr.io/cdelgehier/aperture:",
+    "helm/aperture/README.md.gotmpl:--version ",
+    "docs/reference/plugin-contract.md:ghcr.io/cdelgehier/aperture:",
+    "docs/how-to/deploy-with-helm.md:--version ",
+    "docs/how-to/deploy-with-helm.md:ghcr.io/cdelgehier/aperture:",
+    "docs/explanation/plugin-repositories.md:ghcr.io/cdelgehier/aperture:",
 ]
 
 [dependency-groups]

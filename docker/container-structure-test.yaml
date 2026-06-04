@@ -1,0 +1,66 @@
+schemaVersion: "2.0.0"
+
+metadataTest:
+  labels:
+    - key: org.opencontainers.image.description
+      value: "Aperture internal REST API for dynamic-select widgets"
+  entrypoint: ["aperture"]
+  workdir: "/app"
+  user: "app"
+  exposedPorts: ["8000"]
+
+fileExistenceTests:
+  - name: "Virtual environment exists"
+    path: /app/.venv/bin/python
+    shouldExist: true
+
+  - name: "Aperture package exists"
+    path: /app/aperture/main.py
+    shouldExist: true
+
+  - name: "Settings module exists"
+    path: /app/aperture/settings.py
+    shouldExist: true
+
+  - name: "No dev tooling ruff in image"
+    path: /app/.venv/bin/ruff
+    shouldExist: false
+
+  - name: "No dev tooling pytest in image"
+    path: /app/.venv/bin/pytest
+    shouldExist: false
+
+fileContentTests:
+  - name: "App user exists with uid 1000"
+    path: /etc/passwd
+    expectedContents: ["app:x:1000:1000"]
+
+commandTests:
+  - name: "Python is available"
+    command: "python"
+    args: ["--version"]
+    expectedOutput: ["Python 3\\.14"]
+
+  - name: "Aperture package is importable"
+    command: "python"
+    args: ["-c", "import aperture; print('ok')"]
+    expectedOutput: ["ok"]
+
+  - name: "FastAPI is installed"
+    command: "python"
+    args: ["-c", "import fastapi; print('ok')"]
+    expectedOutput: ["ok"]
+
+  - name: "Pydantic settings is installed"
+    command: "python"
+    args: ["-c", "import pydantic_settings; print('ok')"]
+    expectedOutput: ["ok"]
+
+  - name: "Structlog is installed"
+    command: "python"
+    args: ["-c", "import structlog; print('ok')"]
+    expectedOutput: ["ok"]
+
+  - name: "Running as non-root user"
+    command: "whoami"
+    expectedOutput: ["app"]

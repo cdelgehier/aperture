@@ -81,3 +81,26 @@ plugins:
 ```
 
 The plugin repository owns how it validates and uses `GITLAB_PAT`.
+
+## Runtime Image
+
+The Aperture core image contains only the core runtime and built-in plugins.
+
+A business plugin repository can publish its own derived image:
+
+```dockerfile
+FROM ghcr.io/cdelgehier/aperture:0.5.1
+
+COPY aperture_plugin_gitlab /app/aperture_plugin_gitlab
+```
+
+That image is then used by Helm:
+
+```yaml
+image:
+  repository: ghcr.io/acme/aperture-gitlab
+  tag: "0.1.0"
+```
+
+This keeps the core image generic and lets each plugin repository own its
+dependencies and release cadence.

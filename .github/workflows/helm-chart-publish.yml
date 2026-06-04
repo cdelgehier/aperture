@@ -1,0 +1,43 @@
+---
+name: Helm Chart Publish
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  CHART_NAMESPACE: ${{ github.repository_owner }}/charts
+  CHART_PATH: helm/aperture
+
+jobs:
+  helm-chart-publish:
+    name: Package and push Helm chart
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ${{ env.REGISTRY }} --username "${{ github.actor }}" --password-stdin
+
+      - name: Package chart
+        run: helm package "${{ env.CHART_PATH }}" --destination dist
+
+      - name: Push chart
+        run: helm push dist/aperture-*.tgz "oci://${{ env.REGISTRY }}/${{ env.CHART_NAMESPACE }}"
+
+      - name: Summary
+        run: |
+          CHART_VERSION=$(grep '^version:' "${{ env.CHART_PATH }}/Chart.yaml" | awk '{print $2}')
+          echo "Helm chart pushed: oci://${{ env.REGISTRY }}/${{ env.CHART_NAMESPACE }}/aperture --version ${CHART_VERSION}" >> "$GITHUB_STEP_SUMMARY"

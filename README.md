@@ -32,6 +32,21 @@ Docker Compose tutorial: [docs/tutorials/docker-compose-demo.md](docs/tutorials/
 
 Helm chart: [helm/aperture/README.md](helm/aperture/README.md).
 
+Published artifacts:
+
+```text
+Docker image: ghcr.io/cdelgehier/aperture
+Helm chart:   oci://ghcr.io/cdelgehier/charts/aperture
+```
+
+List available published versions with `crane`.
+`crane` is a small GoogleContainerTools CLI for reading OCI registries:
+
+```bash
+crane ls ghcr.io/cdelgehier/aperture
+crane ls ghcr.io/cdelgehier/charts/aperture
+```
+
 Useful checks:
 
 ```bash
