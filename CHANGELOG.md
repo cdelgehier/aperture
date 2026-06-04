@@ -1,3 +1,17 @@
+## v0.4.0 (2026-06-04)
+
+### Feat
+
+- add cache get-or-set helper
+- add debug cache logs
+- bind service name in logs
+- add request context middleware
+- add rfc 7807 http error responses
+
+### Refactor
+
+- move shared pydantic models
+
 ## v0.3.0 (2026-06-04)
 
 ### Feat
