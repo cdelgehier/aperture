@@ -43,6 +43,7 @@ def create_router(context: PluginContext) -> APIRouter:
         return [
             SelectItem(label="listen_addr", value=str(settings.listen_addr)),
             SelectItem(label="port", value=str(settings.port)),
+            SelectItem(label="service_name", value=settings.service_name),
             SelectItem(label="log_level", value=settings.log_level),
             SelectItem(
                 label="cache_backend",

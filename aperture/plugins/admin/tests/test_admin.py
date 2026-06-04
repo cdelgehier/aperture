@@ -39,6 +39,7 @@ def test_admin_lists_runtime_settings_without_secrets() -> None:
 
     settings = Settings(
         port=9001,
+        service_name="aperture-test",
         log_level="debug",
         cache_backend="redis",
         cache_default_ttl_seconds=120,
@@ -54,6 +55,7 @@ def test_admin_lists_runtime_settings_without_secrets() -> None:
     assert response.json() == [
         {"label": "listen_addr", "value": "127.0.0.1"},
         {"label": "port", "value": "9001"},
+        {"label": "service_name", "value": "aperture-test"},
         {"label": "log_level", "value": "debug"},
         {"label": "cache_backend", "value": "redis"},
         {"label": "cache_default_ttl_seconds", "value": "120"},

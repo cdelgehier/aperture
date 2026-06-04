@@ -22,7 +22,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     """Create and configure the FastAPI app."""
 
     resolved_settings = settings or Settings()
-    configure_logging(resolved_settings.log_level)
+    configure_logging(resolved_settings.log_level, resolved_settings.service_name)
     log = get_logger(__name__)
 
     @asynccontextmanager
@@ -113,7 +113,7 @@ def main() -> None:
     """Run the API server with settings from the environment."""
 
     settings = Settings()
-    configure_logging(settings.log_level)
+    configure_logging(settings.log_level, settings.service_name)
     uvicorn.run(
         "aperture.main:app",
         host=str(settings.listen_addr),

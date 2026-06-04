@@ -14,6 +14,7 @@ def test_default_settings() -> None:
 
     settings = load_settings()
 
+    assert settings.service_name == "aperture"
     assert str(settings.listen_addr) == "127.0.0.1"
     assert settings.port == 8000
     assert settings.auth_mode == "off"

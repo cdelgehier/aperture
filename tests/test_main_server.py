@@ -50,10 +50,10 @@ def test_lifespan_closes_cache_store(settings: Settings) -> None:
 
 
 @pytest.mark.parametrize(
-    ("listen_addr", "port", "log_level"),
+    ("listen_addr", "port", "log_level", "service_name"),
     [
-        ("0.0.0.0", "9000", "debug"),
-        ("127.0.0.1", "8100", "info"),
+        ("0.0.0.0", "9000", "debug", "aperture-dev"),
+        ("127.0.0.1", "8100", "info", "aperture-local"),
     ],
 )
 def test_main_runs_uvicorn_with_settings(
@@ -61,12 +61,14 @@ def test_main_runs_uvicorn_with_settings(
     listen_addr: str,
     port: str,
     log_level: str,
+    service_name: str,
 ) -> None:
     """The CLI entrypoint starts Uvicorn with configured values."""
 
     monkeypatch.setenv("APT_LISTEN_ADDR", listen_addr)
     monkeypatch.setenv("APT_PORT", port)
     monkeypatch.setenv("APT_LOG_LEVEL", log_level)
+    monkeypatch.setenv("APT_SERVICE_NAME", service_name)
 
     with (
         patch("aperture.main.configure_logging") as configure_logging,
@@ -74,7 +76,7 @@ def test_main_runs_uvicorn_with_settings(
     ):
         main()
 
-    configure_logging.assert_called_once_with(log_level)
+    configure_logging.assert_called_once_with(log_level, service_name)
     run.assert_called_once_with(
         "aperture.main:app",
         host=listen_addr,

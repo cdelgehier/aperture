@@ -5,6 +5,7 @@ from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 from aperture.main import create_app
+from aperture.settings import Settings
 
 
 def test_request_id_header_is_reused() -> None:
@@ -40,9 +41,10 @@ def test_security_header_is_added() -> None:
 def test_request_logging_records_request_data() -> None:
     """HTTP middleware logs request data."""
 
+    settings = Settings(service_name="aperture-test")
     with (
         patch("aperture.middlewares.request_context.get_logger") as get_logger,
-        TestClient(create_app()) as client,
+        TestClient(create_app(settings)) as client,
     ):
         logger = get_logger.return_value
         response = client.get("/", headers={"X-Request-ID": "request-1"})
@@ -50,6 +52,7 @@ def test_request_logging_records_request_data() -> None:
     assert response.status_code == 200
     logger.info.assert_called_with(
         "http request finished",
+        service_name="aperture-test",
         request_id="request-1",
         method="GET",
         path="/",

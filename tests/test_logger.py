@@ -46,3 +46,15 @@ def test_get_logger_returns_bound_logger() -> None:
     logger = get_logger("aperture.test")
 
     assert logger is not None
+
+
+def test_configure_logging_binds_service_name() -> None:
+    """Logging binds the service name for shared log collectors."""
+
+    with (
+        patch("aperture.logger.sys.stderr.isatty", return_value=False),
+        patch("aperture.logger.structlog.contextvars.bind_contextvars") as bind,
+    ):
+        configure_logging("info", service_name="aperture-test")
+
+    bind.assert_called_once_with(service_name="aperture-test")

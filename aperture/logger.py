@@ -7,12 +7,16 @@ from typing import Any
 import structlog
 
 
-def configure_logging(log_level: str = "info") -> None:
+def configure_logging(log_level: str = "info", service_name: str = "aperture") -> None:
     """Configure structlog for local use and containers."""
 
     # Keep Python logging and structlog on the same minimum level.
     level = getattr(logging, log_level.upper(), logging.INFO)
     logging.basicConfig(format="%(message)s", level=level)
+
+    # Service name is bound once here, then request data is added per request.
+    structlog.contextvars.clear_contextvars()
+    structlog.contextvars.bind_contextvars(service_name=service_name)
 
     # Processors enrich each log line before it is rendered.
     processors: list[Any] = [

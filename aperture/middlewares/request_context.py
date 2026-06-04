@@ -23,12 +23,15 @@ async def request_context_middleware(
 ) -> Response:
     """Bind request context and log one line per HTTP request."""
 
+    settings = getattr(request.app.state, "settings", None)
+    service_name = getattr(settings, "service_name", "aperture")
     request_id = request.headers.get(REQUEST_ID_HEADER) or str(uuid4())
     request.state.request_id = request_id
 
     # Start with a clean context so data from another request cannot leak.
     structlog.contextvars.clear_contextvars()
     structlog.contextvars.bind_contextvars(
+        service_name=service_name,
         request_id=request_id,
         method=request.method,
         path=request.url.path,
@@ -48,6 +51,7 @@ async def request_context_middleware(
         )
         get_logger(__name__).info(
             "http request finished",
+            service_name=service_name,
             request_id=request_id,
             method=request.method,
             path=request.url.path,

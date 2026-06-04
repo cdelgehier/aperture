@@ -18,6 +18,10 @@ from aperture.models.plugin_config import PluginConfig
 class Settings(BaseSettings):
     """All settings used by the Aperture service."""
 
+    service_name: str = Field(
+        default="aperture",
+        description="Service name written in logs.",
+    )
     listen_addr: IPv4Address = Field(
         default=IPv4Address("127.0.0.1"),
         description="IP address used by the HTTP server.",
