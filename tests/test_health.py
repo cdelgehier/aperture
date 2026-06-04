@@ -4,7 +4,8 @@ import pytest
 from fastapi.testclient import TestClient
 
 from aperture.main import create_app
-from aperture.settings import PluginConfig, Settings
+from aperture.models.plugin_config import PluginConfig
+from aperture.settings import Settings
 
 
 @pytest.mark.parametrize(

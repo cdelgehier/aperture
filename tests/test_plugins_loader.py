@@ -6,8 +6,8 @@ from types import ModuleType
 from fastapi import APIRouter
 
 from aperture.cache.store import MemoryCacheStore
+from aperture.models.plugin_config import PluginConfig
 from aperture.plugins.loader import PluginContext, load_plugins
-from aperture.settings import PluginConfig
 
 
 def test_load_plugins_loads_enabled_plugin() -> None:

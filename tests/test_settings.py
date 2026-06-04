@@ -5,7 +5,8 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from aperture.settings import PluginConfig, Settings, load_settings
+from aperture.models.plugin_config import PluginConfig
+from aperture.settings import Settings, load_settings
 
 
 def test_default_settings() -> None:

@@ -8,8 +8,9 @@ from fastapi.testclient import TestClient
 from pydantic import TypeAdapter, ValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from aperture.errors import ProblemDetails, http_exception_handler
+from aperture.errors import http_exception_handler
 from aperture.main import create_app
+from aperture.models.problem_details import ProblemDetails
 
 
 def test_problem_details_model_accepts_request_id() -> None:

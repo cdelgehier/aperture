@@ -11,7 +11,7 @@ from typing import Any
 from fastapi import APIRouter
 
 from aperture.cache.store import CacheStore
-from aperture.settings import PluginConfig
+from aperture.models.plugin_config import PluginConfig
 
 
 @dataclass(frozen=True)
