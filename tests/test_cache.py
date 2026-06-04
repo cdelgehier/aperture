@@ -11,6 +11,7 @@ from aperture.cache.store import (
     RedisCacheStore,
     build_cache_key,
     create_cache_store,
+    get_or_set_cache,
     safe_delete_cache,
     safe_delete_cache_namespace,
     safe_get_cache,
@@ -113,6 +114,22 @@ class SpyLogger:
         """Record one warning call."""
 
         self.warnings.append((event, values))
+
+
+class SpyLiveFetcher:
+    """Spy async fetcher that records live fetch calls."""
+
+    def __init__(self, value: Any) -> None:
+        """Keep the value returned by the fetcher."""
+
+        self.value = value
+        self.calls = 0
+
+    async def fetch(self) -> Any:
+        """Return the configured value and record the call."""
+
+        self.calls += 1
+        return self.value
 
 
 def test_build_cache_key_is_stable_for_param_order() -> None:
@@ -390,6 +407,125 @@ async def test_safe_set_cache_logs_cache_set() -> None:
     )
 
     assert logger.debugs == [("cache set", {"key": "key", "ttl": 30})]
+
+
+@pytest.mark.asyncio
+async def test_get_or_set_cache_returns_live_value_without_cache() -> None:
+    """Cache helper fetches live data when no cache is configured."""
+
+    logger = SpyLogger()
+    fetcher = SpyLiveFetcher({"value": "live"})
+
+    value = await get_or_set_cache(
+        None,
+        "key",
+        ttl=30,
+        nocache=False,
+        logger=logger,
+        fetch_live=fetcher.fetch,
+    )
+
+    assert value == {"value": "live"}
+    assert fetcher.calls == 1
+    assert logger.debugs == [("cache disabled", {"key": "key"})]
+
+
+@pytest.mark.asyncio
+async def test_get_or_set_cache_returns_cached_value() -> None:
+    """Cache helper returns cached data when it exists."""
+
+    logger = SpyLogger()
+    cache = MemoryCacheStore()
+    fetcher = SpyLiveFetcher({"value": "live"})
+    await cache.set("key", {"value": "cached"}, ttl=30)
+
+    value = await get_or_set_cache(
+        cache,
+        "key",
+        ttl=30,
+        nocache=False,
+        logger=logger,
+        fetch_live=fetcher.fetch,
+    )
+
+    assert value == {"value": "cached"}
+    assert fetcher.calls == 0
+    assert logger.debugs == [("cache hit", {"key": "key"})]
+
+
+@pytest.mark.asyncio
+async def test_get_or_set_cache_fetches_and_sets_on_miss() -> None:
+    """Cache helper fetches live data and stores it after a miss."""
+
+    logger = SpyLogger()
+    cache = MemoryCacheStore()
+    fetcher = SpyLiveFetcher({"value": "live"})
+
+    value = await get_or_set_cache(
+        cache,
+        "key",
+        ttl=30,
+        nocache=False,
+        logger=logger,
+        fetch_live=fetcher.fetch,
+    )
+
+    assert value == {"value": "live"}
+    assert fetcher.calls == 1
+    assert await cache.get("key") == {"value": "live"}
+    assert logger.debugs == [
+        ("cache miss", {"key": "key"}),
+        ("cache set", {"key": "key", "ttl": 30}),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_get_or_set_cache_bypasses_read_and_refreshes_cache() -> None:
+    """Cache helper refreshes cache when nocache is requested."""
+
+    logger = SpyLogger()
+    cache = MemoryCacheStore()
+    fetcher = SpyLiveFetcher({"value": "live"})
+    await cache.set("key", {"value": "cached"}, ttl=30)
+
+    value = await get_or_set_cache(
+        cache,
+        "key",
+        ttl=45,
+        nocache=True,
+        logger=logger,
+        fetch_live=fetcher.fetch,
+    )
+
+    assert value == {"value": "live"}
+    assert fetcher.calls == 1
+    assert await cache.get("key") == {"value": "live"}
+    assert logger.debugs == [
+        ("cache bypass", {"key": "key"}),
+        ("cache set", {"key": "key", "ttl": 45}),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_get_or_set_cache_fetches_live_when_cache_read_fails() -> None:
+    """Cache helper keeps serving live data when cache read fails."""
+
+    logger = SpyLogger()
+    fetcher = SpyLiveFetcher({"value": "live"})
+
+    value = await get_or_set_cache(
+        RaisingCacheStore(),
+        "key",
+        ttl=30,
+        nocache=False,
+        logger=logger,
+        fetch_live=fetcher.fetch,
+    )
+
+    assert value == {"value": "live"}
+    assert fetcher.calls == 1
+    assert logger.warnings[0][0] == "cache get failed"
+    assert logger.warnings[1][0] == "cache set failed"
 
 
 @pytest.mark.asyncio

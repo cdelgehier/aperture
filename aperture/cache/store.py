@@ -242,6 +242,33 @@ async def safe_set_cache(
         logger.warning("cache set failed", key=key, error=str(exc))
 
 
+async def get_or_set_cache(
+    cache: CacheStore | None,
+    key: str,
+    *,
+    ttl: int,
+    nocache: bool,
+    logger: CacheLogger,
+    fetch_live: Callable[[], Awaitable[Any]],
+) -> Any:
+    """Return cached data or fetch live data and refresh the cache."""
+
+    if cache is None:
+        logger.debug("cache disabled", key=key)
+        return await fetch_live()
+
+    if nocache:
+        logger.debug("cache bypass", key=key)
+    else:
+        cached_value = await safe_get_cache(cache, key, logger=logger)
+        if cached_value is not None:
+            return cached_value
+
+    live_value = await fetch_live()
+    await safe_set_cache(cache, key, live_value, ttl=ttl, logger=logger)
+    return live_value
+
+
 async def safe_delete_cache(
     cache: CacheStore,
     key: str,
