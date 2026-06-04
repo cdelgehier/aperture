@@ -1,0 +1,39 @@
+services:
+  redis:
+    image: redis:8-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      aperture-demo:
+        aliases:
+          - redis
+    ports:
+      - "6379:6379"
+
+  aperture:
+    build:
+      context: ../../..
+      dockerfile: docs/getting-started/demo/Dockerfile
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - aperture-demo
+    ports:
+      - "8000:8000"
+    environment:
+      APT_LISTEN_ADDR: "0.0.0.0"
+      APT_PORT: "8000"
+      APT_SERVICE_NAME: "aperture-demo"
+      APT_LOG_LEVEL: "debug"
+      APT_CACHE_BACKEND: "redis"
+      APT_REDIS_URL: "redis://redis:6379/0"
+    volumes:
+      - ./settings.yaml:/app/settings.yaml:ro
+
+networks:
+  aperture-demo:
+    name: aperture-demo

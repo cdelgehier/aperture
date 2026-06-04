@@ -26,6 +26,8 @@ uv sync --all-groups
 task up
 ```
 
+Docker Compose guide: [docs/getting-started/demo/README.md](docs/getting-started/demo/README.md).
+
 Useful checks:
 
 ```bash

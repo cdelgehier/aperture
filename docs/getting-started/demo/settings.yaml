@@ -1,0 +1,14 @@
+plugins:
+  admin:
+    enabled: true
+    module: aperture.plugins.admin.main
+    prefix: /admin
+    config: {}
+
+  demo_data_gouv:
+    enabled: true
+    module: demo_plugins.demo_data_gouv
+    prefix: /demo
+    config:
+      page_size: 25
+      ttl_seconds: 300
