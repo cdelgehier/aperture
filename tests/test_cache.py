@@ -96,12 +96,18 @@ class RaisingCacheStore:
 
 
 class SpyLogger:
-    """Spy logger that records warning calls."""
+    """Spy logger that records cache log calls."""
 
     def __init__(self) -> None:
-        """Create an empty warning list."""
+        """Create empty log call lists."""
 
+        self.debugs: list[tuple[str, dict[str, object]]] = []
         self.warnings: list[tuple[str, dict[str, object]]] = []
+
+    def debug(self, event: str, **values: object) -> None:
+        """Record one debug call."""
+
+        self.debugs.append((event, values))
 
     def warning(self, event: str, **values: object) -> None:
         """Record one warning call."""
@@ -325,6 +331,33 @@ async def test_safe_get_cache_falls_back_on_error() -> None:
 
 
 @pytest.mark.asyncio
+async def test_safe_get_cache_logs_cache_miss() -> None:
+    """Safe cache reads log cache misses at debug level."""
+
+    logger = SpyLogger()
+    cache = MemoryCacheStore()
+
+    value = await safe_get_cache(cache, "key", logger=logger)
+
+    assert value is None
+    assert logger.debugs == [("cache miss", {"key": "key"})]
+
+
+@pytest.mark.asyncio
+async def test_safe_get_cache_logs_cache_hit() -> None:
+    """Safe cache reads log cache hits at debug level."""
+
+    logger = SpyLogger()
+    cache = MemoryCacheStore()
+    await cache.set("key", {"value": "stored"}, ttl=30)
+
+    value = await safe_get_cache(cache, "key", logger=logger)
+
+    assert value == {"value": "stored"}
+    assert logger.debugs == [("cache hit", {"key": "key"})]
+
+
+@pytest.mark.asyncio
 async def test_safe_set_cache_logs_and_continues_on_error() -> None:
     """Safe cache writes log errors and continue."""
 
@@ -340,6 +373,23 @@ async def test_safe_set_cache_logs_and_continues_on_error() -> None:
 
     assert logger.warnings[0][0] == "cache set failed"
     assert logger.warnings[0][1]["key"] == "key"
+
+
+@pytest.mark.asyncio
+async def test_safe_set_cache_logs_cache_set() -> None:
+    """Safe cache writes log cache sets at debug level."""
+
+    logger = SpyLogger()
+
+    await safe_set_cache(
+        MemoryCacheStore(),
+        "key",
+        {"value": "stored"},
+        ttl=30,
+        logger=logger,
+    )
+
+    assert logger.debugs == [("cache set", {"key": "key", "ttl": 30})]
 
 
 @pytest.mark.asyncio

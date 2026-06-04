@@ -40,6 +40,10 @@ class CacheStore(Protocol):
 class CacheLogger(Protocol):
     """Logger shape used by safe cache helpers."""
 
+    def debug(self, event: str, **values: object) -> Any:
+        """Log one cache debug event."""
+        ...
+
     def warning(self, event: str, **values: object) -> Any:
         """Log one cache warning."""
         ...
@@ -210,7 +214,12 @@ async def safe_get_cache(
     """Read cache and return None if the backend fails."""
 
     try:
-        return await cache.get(key)
+        value = await cache.get(key)
+        if value is None:
+            logger.debug("cache miss", key=key)
+            return None
+        logger.debug("cache hit", key=key)
+        return value
     except Exception as exc:  # noqa: BLE001
         logger.warning("cache get failed", key=key, error=str(exc))
         return None
@@ -228,6 +237,7 @@ async def safe_set_cache(
 
     try:
         await cache.set(key, value, ttl)
+        logger.debug("cache set", key=key, ttl=ttl)
     except Exception as exc:  # noqa: BLE001
         logger.warning("cache set failed", key=key, error=str(exc))
 
