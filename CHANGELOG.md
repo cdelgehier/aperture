@@ -1,3 +1,10 @@
+## v0.5.0 (2026-06-04)
+
+### Feat
+
+- add helm chart
+- add api key authentication
+
 ## v0.4.0 (2026-06-04)
 
 ### Feat
