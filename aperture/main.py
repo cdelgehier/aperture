@@ -11,6 +11,7 @@ from starlette.exceptions import HTTPException
 from aperture.cache.store import create_cache_store
 from aperture.errors import http_exception_handler
 from aperture.logger import configure_logging, get_logger
+from aperture.middlewares.auth import api_key_auth_middleware
 from aperture.middlewares.request_context import request_context_middleware
 from aperture.models.select_item import SelectItem
 from aperture.plugins.loader import load_plugins
@@ -58,6 +59,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         lifespan=lifespan,
     )
     app.add_exception_handler(HTTPException, http_exception_handler)
+
+    # FastAPI runs HTTP middlewares in reverse registration order.
+    # Register auth first so request-context wraps it and auth errors get ids.
+    app.middleware("http")(api_key_auth_middleware)
 
     # Run this on every request to add request id, logs, and security headers.
     app.middleware("http")(request_context_middleware)

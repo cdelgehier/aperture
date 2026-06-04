@@ -45,11 +45,15 @@ def test_admin_lists_runtime_settings_without_secrets() -> None:
         cache_default_ttl_seconds=120,
         redis_url=RedisDsn("redis://:secret@redis.internal:6379/0"),
         auth_mode="api_key",
+        api_keys={"admin-test": "secret"},
         api_key_header="X-Aperture-Key",
     )
 
     with TestClient(create_app(settings)) as client:
-        response = client.get("/api/v1/admin/settings")
+        response = client.get(
+            "/api/v1/admin/settings",
+            headers={"X-Aperture-Key": "secret"},
+        )
 
     assert response.status_code == 200
     assert response.json() == [

@@ -152,6 +152,28 @@ Environment override example:
 APT_PORT=9000 task up
 ```
 
+## Authentication
+
+Aperture can protect API routes with API keys:
+
+```yaml
+auth_mode: api_key
+api_key_header: X-API-Key
+api_keys:
+  internal-tool: "change-me"
+auth_skip_paths:
+  - /
+  - /docs
+  - /openapi.json
+  - /livez
+  - /readyz
+  - /api/v1/demo/*
+```
+
+`auth_skip_paths` uses exact path matches. For example,
+`/api/v1/demo/models` skips only that path. Use a trailing wildcard like
+`/api/v1/demo/*` to skip `/api/v1/demo` and every route under it.
+
 ## Logging
 
 Logging uses `structlog`.
