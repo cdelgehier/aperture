@@ -43,5 +43,5 @@ def test_readyz_returns_not_ready_when_plugin_fails() -> None:
         response = client.get("/readyz")
 
     assert response.status_code == 503
-    assert response.json()["detail"]["status"] == "not_ready"
-    assert response.json()["detail"]["plugin_errors"][0]["name"] == "missing"
+    assert response.json()["status"] == "not_ready"
+    assert response.json()["plugin_errors"][0]["name"] == "missing"

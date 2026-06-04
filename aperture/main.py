@@ -4,9 +4,12 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException
 
 from aperture.cache.store import create_cache_store
+from aperture.errors import http_exception_handler
 from aperture.logger import configure_logging, get_logger
 from aperture.models.select_item import SelectItem
 from aperture.plugins.loader import load_plugins
@@ -53,6 +56,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         version=__version__,
         lifespan=lifespan,
     )
+    app.add_exception_handler(HTTPException, http_exception_handler)
 
     @app.get("/", response_model=list[SelectItem])
     async def root() -> list[SelectItem]:
@@ -66,15 +70,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
         return {"status": "ok"}
 
-    @app.get("/readyz")
-    async def readyz() -> dict[str, object]:
-        """Return readiness and plugin load state for Kubernetes."""
+    # Disable response model generation because this route can return JSONResponse.
+    @app.get("/readyz", response_model=None)
+    async def readyz() -> dict[str, object] | JSONResponse:
+        """Return readiness and plugin load state for Kubernetes.
+
+        Normal ready response is a dict, not-ready response
+        is a JSONResponse with status 503.
+        """
 
         plugin_errors = getattr(app.state, "plugin_errors", [])
         if plugin_errors:
-            raise HTTPException(
+            # Return JSONResponse because this is a technical kube probe.
+            return JSONResponse(
                 status_code=503,
-                detail={
+                content={
                     "status": "not_ready",
                     "plugin_errors": [
                         {
