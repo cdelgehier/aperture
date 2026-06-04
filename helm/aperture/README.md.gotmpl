@@ -11,7 +11,7 @@ helm upgrade --install aperture ./helm/aperture
 Install the published OCI chart from GitHub Container Registry:
 
 ```bash
-helm upgrade --install aperture oci://ghcr.io/cdelgehier/charts/aperture --version 0.5.1
+helm upgrade --install aperture oci://ghcr.io/cdelgehier/charts/aperture --version 0.6.0
 ```
 
 List available chart versions with `crane`.

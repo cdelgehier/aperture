@@ -81,7 +81,7 @@ code so `module` can be imported at startup.
 Build your own image from the published Aperture image:
 
 ```dockerfile
-FROM ghcr.io/cdelgehier/aperture:0.5.1
+FROM ghcr.io/cdelgehier/aperture:0.6.0
 
 COPY aperture_plugin_gitlab /app/aperture_plugin_gitlab
 ```

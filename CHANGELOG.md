@@ -1,3 +1,9 @@
+## v0.6.0 (2026-06-04)
+
+### Feat
+
+- publish docker image and helm chart
+
 ## v0.5.1 (2026-06-04)
 
 ### Fix
