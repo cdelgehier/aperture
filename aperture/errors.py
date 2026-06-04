@@ -43,7 +43,10 @@ async def http_exception_handler(
         status_code = exc.status_code
         detail = str(exc.detail)
 
-    request_id = request.headers.get("X-Request-ID", "unknown")
+    # Prefer the id set by our middleware, but keep a fallback for direct calls.
+    request_id = getattr(request.state, "request_id", None)
+    if request_id is None:
+        request_id = request.headers.get("X-Request-ID", "unknown")
     problem = ProblemDetails(
         title=_status_title(status_code),
         status=status_code,

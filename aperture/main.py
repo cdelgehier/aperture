@@ -11,6 +11,7 @@ from starlette.exceptions import HTTPException
 from aperture.cache.store import create_cache_store
 from aperture.errors import http_exception_handler
 from aperture.logger import configure_logging, get_logger
+from aperture.middlewares.request_context import request_context_middleware
 from aperture.models.select_item import SelectItem
 from aperture.plugins.loader import load_plugins
 from aperture.settings import Settings
@@ -57,6 +58,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         lifespan=lifespan,
     )
     app.add_exception_handler(HTTPException, http_exception_handler)
+
+    # Run this on every request to add request id, logs, and security headers.
+    app.middleware("http")(request_context_middleware)
 
     @app.get("/", response_model=list[SelectItem])
     async def root() -> list[SelectItem]:

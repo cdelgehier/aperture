@@ -1,11 +1,14 @@
 """Tests for Problem Details responses."""
 
+import json
+
 import pytest
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from fastapi.testclient import TestClient
 from pydantic import TypeAdapter, ValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from aperture.errors import ProblemDetails
+from aperture.errors import ProblemDetails, http_exception_handler
 from aperture.main import create_app
 
 
@@ -97,3 +100,24 @@ def test_unknown_route_returns_problem_details() -> None:
         "detail": "Not Found",
         "request_id": "request-404",
     }
+
+
+async def test_problem_details_falls_back_to_request_header_without_middleware() -> (
+    None
+):
+    """Problem Details can still use request id without Aperture middleware."""
+
+    scope = {
+        "type": "http",
+        "method": "GET",
+        "path": "/no-state",
+        "headers": [(b"x-request-id", b"header-only")],
+    }
+    request = Request(scope)
+    exception = StarletteHTTPException(status_code=400, detail="Bad request")
+
+    response = await http_exception_handler(request, exception)
+
+    body = json.loads(bytes(response.body))
+    assert response.status_code == 400
+    assert body["request_id"] == "header-only"
