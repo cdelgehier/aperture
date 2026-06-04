@@ -16,7 +16,7 @@ services:
   aperture:
     build:
       context: ../../..
-      dockerfile: docs/getting-started/demo/Dockerfile
+      dockerfile: docs/tutorials/docker-compose-demo/Dockerfile
     depends_on:
       redis:
         condition: service_healthy

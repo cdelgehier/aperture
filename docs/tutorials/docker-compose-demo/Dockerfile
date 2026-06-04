@@ -4,8 +4,8 @@ WORKDIR /app
 
 COPY pyproject.toml uv.lock README.md ./
 COPY aperture ./aperture
-COPY docs/getting-started/demo/demo_plugins ./demo_plugins
-COPY docs/getting-started/demo/settings.yaml ./settings.yaml
+COPY docs/tutorials/docker-compose-demo/demo_plugins ./demo_plugins
+COPY docs/tutorials/docker-compose-demo/settings.yaml ./settings.yaml
 
 RUN pip install --no-cache-dir uv \
     && uv sync --frozen --no-dev

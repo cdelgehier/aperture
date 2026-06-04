@@ -26,7 +26,9 @@ uv sync --all-groups
 task up
 ```
 
-Docker Compose guide: [docs/getting-started/demo/README.md](docs/getting-started/demo/README.md).
+Documentation index: [docs/README.md](docs/README.md).
+
+Docker Compose tutorial: [docs/tutorials/docker-compose-demo.md](docs/tutorials/docker-compose-demo.md).
 
 Helm chart: [helm/aperture/README.md](helm/aperture/README.md).
 
