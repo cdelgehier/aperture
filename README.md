@@ -28,6 +28,8 @@ task up
 
 Docker Compose guide: [docs/getting-started/demo/README.md](docs/getting-started/demo/README.md).
 
+Helm chart: [helm/aperture/README.md](helm/aperture/README.md).
+
 Useful checks:
 
 ```bash
@@ -219,6 +221,30 @@ Plugins choose the TTL that fits each resource. Query parameters that only
 change display, like empty options or filtering, should stay out of cache keys.
 Synthetic empty select options should be added after cache reads and never
 stored in cache.
+
+## Helm
+
+The Helm chart lives in `helm/aperture`.
+
+```bash
+task helm:docs
+task test:helm
+```
+
+Use separate values files for each environment:
+
+```bash
+helm upgrade --install aperture ./helm/aperture -f helm/aperture/values-nonprod.yaml
+helm upgrade --install aperture ./helm/aperture -f helm/aperture/values-prod.yaml
+```
+
+Production should use `auth.mode=api_key`, an existing Secret for
+`APT_API_KEYS`, and ServiceAccount annotations when the cluster uses workload
+identity.
+
+The chart supports both Ingress and Gateway API. Prefer Gateway API when the
+cluster has a Gateway controller and CRDs installed; keep Ingress for simpler or
+older clusters.
 
 ## Test Rules
 

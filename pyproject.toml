@@ -33,6 +33,7 @@ major_version_zero = true
 version_files = [
     "pyproject.toml:^version",
     "aperture/version.py:^__version__",
+    "helm/aperture/Chart.yaml:^appVersion",
 ]
 
 [dependency-groups]

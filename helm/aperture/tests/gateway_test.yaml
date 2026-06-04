@@ -1,0 +1,22 @@
+suite: gateway
+templates:
+  - templates/gateway.yaml
+tests:
+  - it: does not create a gateway by default
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: can create a gateway for labs
+    set:
+      gatewayApi.gateway.create: true
+      gatewayApi.gateway.className: standard
+    asserts:
+      - isKind:
+          of: Gateway
+      - equal:
+          path: spec.gatewayClassName
+          value: standard
+      - equal:
+          path: spec.listeners[0].name
+          value: http

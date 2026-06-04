@@ -1,0 +1,35 @@
+suite: settings configmap
+templates:
+  - templates/settings-configmap.yaml
+tests:
+  - it: renders structured settings as YAML
+    asserts:
+      - matchRegex:
+          path: data["settings.yaml"]
+          pattern: "auth_skip_paths:"
+      - matchRegex:
+          path: data["settings.yaml"]
+          pattern: "plugins:"
+      - matchRegex:
+          path: data["settings.yaml"]
+          pattern: "module: aperture.plugins.admin.main"
+
+  - it: renders plugin config without JSON escaping
+    set:
+      aperture.plugins.demo:
+        enabled: true
+        module: demo_plugins.demo_data_gouv
+        prefix: /demo
+        config:
+          query:
+            dataset: fontaines-a-boire
+            fields:
+              - modele
+              - commune
+    asserts:
+      - matchRegex:
+          path: data["settings.yaml"]
+          pattern: "dataset: fontaines-a-boire"
+      - matchRegex:
+          path: data["settings.yaml"]
+          pattern: "- modele"

@@ -1,0 +1,26 @@
+suite: pdb
+templates:
+  - templates/pdb.yaml
+tests:
+  - it: does not create a pdb by default
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders a pdb when enabled
+    set:
+      pdb.enabled: true
+      pdb.minAvailable: 1
+    asserts:
+      - isKind:
+          of: PodDisruptionBudget
+      - equal:
+          path: spec.minAvailable
+          value: 1
+
+  - it: renders pdb from prod values
+    values:
+      - ../values-prod.yaml
+    asserts:
+      - isKind:
+          of: PodDisruptionBudget

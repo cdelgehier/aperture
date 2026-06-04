@@ -1,0 +1,102 @@
+# {{ .Name }}
+
+{{ .Description }}
+
+## Install
+
+```bash
+helm upgrade --install aperture ./helm/aperture
+```
+
+Use the example values files to separate environments:
+
+```bash
+helm upgrade --install aperture ./helm/aperture -f helm/aperture/values-nonprod.yaml
+helm upgrade --install aperture ./helm/aperture -f helm/aperture/values-prod.yaml
+```
+
+## Production Notes
+
+- Set `auth.mode=api_key` in production.
+- Store API keys in an existing Kubernetes Secret.
+- Set `serviceAccount.annotations` when your cluster uses workload identity.
+  Examples include EKS IRSA, GKE Workload Identity, AKS Workload Identity,
+  or a lab-specific identity integration.
+- Use Gateway API when your platform supports it. Keep Ingress for older or
+  simpler clusters.
+- Redis is external. This chart configures the Redis URL but does not deploy Redis.
+
+## Runtime Links
+
+```mermaid
+flowchart LR
+    Client["Internal widget or tool"] --> Entry{"Cluster entry"}
+    Entry -->|Gateway API| Route["HTTPRoute"]
+    Entry -->|Ingress| Ingress["Ingress"]
+    Route --> Service["Kubernetes Service"]
+    Ingress --> Service
+    Service --> Pod["Aperture pod"]
+
+    Secret["Existing Secret<br/>APT_API_KEYS"] --> Pod
+    EnvConfig["ConfigMap<br/>APT_* env vars"] --> Pod
+    SettingsConfig["ConfigMap<br/>settings.yaml"] --> Pod
+    PluginSource["Plugin code source<br/>built-in or external"] --> Pod
+    Pod --> Redis["External Redis<br/>optional shared cache"]
+    Pod --> ExternalApis["External APIs<br/>data.gouv.fr, AWS, GitLab, ..."]
+
+    ServiceAccount["ServiceAccount"] --> Pod
+```
+
+## Configuration Split
+
+The chart uses two ConfigMaps on purpose:
+
+- `aperture-env` contains simple `APT_*` environment variables. These values
+  are easy to override per environment.
+- `aperture-settings` contains `settings.yaml`. This is easier to read for
+  nested plugin configuration.
+
+Pydantic loads `settings.yaml` first, then `APT_*` environment variables can
+override it.
+
+Example `aperture-env`:
+
+```yaml
+data:
+  APT_SERVICE_NAME: "aperture-prod"
+  APT_LOG_LEVEL: "info"
+  APT_CACHE_BACKEND: "redis"
+  APT_REDIS_URL: "redis://redis.example:6379/0"
+  APT_AUTH_MODE: "api_key"
+```
+
+Example `aperture-settings`:
+
+```yaml
+data:
+  settings.yaml: |
+    auth_skip_paths:
+      - /
+      - /livez
+      - /readyz
+    plugins:
+      admin:
+        enabled: true
+        module: aperture.plugins.admin.main
+        prefix: /admin
+        config: {}
+      demo:
+        enabled: true
+        module: demo_plugins.demo_data_gouv
+        prefix: /demo
+        config:
+          query:
+            dataset: fontaines-a-boire
+            fields:
+              - modele
+              - commune
+```
+
+## Values
+
+{{ template "chart.valuesTable" . }}

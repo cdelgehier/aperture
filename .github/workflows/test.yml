@@ -23,6 +23,18 @@ jobs:
       - name: Set up Task
         uses: arduino/setup-task@v2
 
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Set up Helm unittest
+        run: helm plugin install https://github.com/helm-unittest/helm-unittest.git --version v1.0.3
+
+      - name: Set up helm-docs
+        run: |
+          curl -sSL https://github.com/norwoodj/helm-docs/releases/download/v1.14.2/helm-docs_1.14.2_Linux_x86_64.tar.gz \
+            | tar -xz helm-docs
+          sudo mv helm-docs /usr/local/bin/helm-docs
+
       - name: Install dependencies
         run: task install
 

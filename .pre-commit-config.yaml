@@ -40,7 +40,7 @@ repos:
     rev: v1.14.2
     hooks:
       - id: helm-docs
-        args: [--chart-search-root=helm]
+        args: [--chart-search-root=helm, --template-files=README.md.gotmpl]
 
   - repo: local
     hooks:

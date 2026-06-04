@@ -1,0 +1,12 @@
+{{- if .Values.gatewayApi.gateway.create -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ default (include "aperture.fullname" .) .Values.gatewayApi.gateway.name }}
+  labels:
+    {{- include "aperture.labels" . | nindent 4 }}
+spec:
+  gatewayClassName: {{ required "gatewayApi.gateway.className is required when gatewayApi.gateway.create=true" .Values.gatewayApi.gateway.className }}
+  listeners:
+    {{- toYaml .Values.gatewayApi.gateway.listeners | nindent 4 }}
+{{- end }}

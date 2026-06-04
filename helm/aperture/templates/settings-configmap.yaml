@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aperture.fullname" . }}-settings
+  labels:
+    {{- include "aperture.labels" . | nindent 4 }}
+data:
+  settings.yaml: |
+    auth_skip_paths:
+{{- toYaml .Values.auth.skipPaths | nindent 6 }}
+    plugins:
+{{- toYaml .Values.aperture.plugins | nindent 6 }}

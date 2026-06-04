@@ -1,0 +1,194 @@
+# -- Number of Aperture pods.
+replicaCount: 1
+
+# -- Deployment update strategy.
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+# -- Override the chart name.
+nameOverride: ""
+
+# -- Override the full release name.
+fullnameOverride: ""
+
+image:
+  # -- Container image repository.
+  repository: ghcr.io/cdelgehier/aperture
+  # -- Container image tag. Defaults to the chart appVersion when empty.
+  tag: ""
+  # -- Image pull policy.
+  pullPolicy: IfNotPresent
+
+# -- Secrets used to pull the container image.
+imagePullSecrets: []
+
+serviceAccount:
+  # -- Create a Kubernetes ServiceAccount.
+  create: true
+  # -- ServiceAccount name. Defaults to the release fullname when empty.
+  name: ""
+  # -- ServiceAccount annotations for cloud identity or platform integrations.
+  annotations: {}
+
+service:
+  # -- Kubernetes Service type.
+  type: ClusterIP
+  # -- Kubernetes Service port.
+  port: 80
+
+ingress:
+  # -- Create an Ingress.
+  enabled: false
+  # -- Ingress class name.
+  className: ""
+  # -- Ingress annotations.
+  annotations: {}
+  # -- Ingress hosts.
+  hosts:
+    - host: aperture.local
+      paths:
+        - path: /
+          pathType: Prefix
+  # -- Ingress TLS settings.
+  tls: []
+
+gatewayApi:
+  gateway:
+    # -- Create a Gateway. In production this is often managed by the platform team.
+    create: false
+    # -- Gateway name. Defaults to the release fullname when empty.
+    name: ""
+    # -- GatewayClass name used when this chart creates the Gateway.
+    className: ""
+    # -- Gateway listeners used when this chart creates the Gateway.
+    listeners:
+      - name: http
+        port: 80
+        protocol: HTTP
+  httpRoute:
+    # -- Create an HTTPRoute.
+    enabled: false
+    # -- HTTPRoute hostnames.
+    hostnames: []
+    # -- Parent Gateway references for the HTTPRoute.
+    parentRefs: []
+    # -- HTTPRoute rules.
+    rules:
+      - matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+aperture:
+  # -- Service name written in logs.
+  serviceName: aperture
+  # -- HTTP listen address inside the pod.
+  listenAddr: "0.0.0.0"
+  # -- HTTP listen port inside the pod.
+  port: 8000
+  # -- Log level used by the service.
+  logLevel: info
+  # -- Cache backend. Use memory for simple runs, redis for shared cache.
+  cacheBackend: memory
+  # -- Default cache TTL in seconds.
+  cacheDefaultTtlSeconds: 300
+  # -- Plugins loaded at startup.
+  plugins:
+    admin:
+      enabled: true
+      module: aperture.plugins.admin.main
+      prefix: /admin
+      config: {}
+
+redis:
+  # -- External Redis URL. Redis is not deployed by this chart.
+  url: redis://127.0.0.1:6379/0
+
+auth:
+  # -- Authentication mode. Use api_key in production.
+  mode: "off"
+  # -- HTTP header that carries the API key.
+  apiKeyHeader: X-API-Key
+  # -- Public paths that do not require authentication. A trailing /* matches children.
+  skipPaths:
+    - /
+    - /docs
+    - /openapi.json
+    - /livez
+    - /readyz
+  apiKeys:
+    # -- Existing Secret that contains APT_API_KEYS as a JSON object.
+    existingSecret: ""
+    # -- Secret key used as the APT_API_KEYS environment variable.
+    existingSecretKey: APT_API_KEYS
+
+probes:
+  liveness:
+    # -- Enable the liveness probe.
+    enabled: true
+    # -- Liveness probe initial delay in seconds.
+    initialDelaySeconds: 10
+    # -- Liveness probe period in seconds.
+    periodSeconds: 10
+  readiness:
+    # -- Enable the readiness probe.
+    enabled: true
+    # -- Readiness probe initial delay in seconds.
+    initialDelaySeconds: 5
+    # -- Readiness probe period in seconds.
+    periodSeconds: 10
+
+# -- Time given to the pod to stop cleanly.
+terminationGracePeriodSeconds: 30
+
+lifecycle:
+  preStop:
+    # -- Enable a small preStop delay before the pod exits.
+    enabled: true
+    # -- Seconds to wait during preStop.
+    sleepSeconds: 5
+
+pdb:
+  # -- Create a PodDisruptionBudget.
+  enabled: false
+  # -- Minimum available pods during voluntary disruptions.
+  minAvailable: 1
+
+# -- Extra environment variables added to the Aperture container.
+extraEnv: []
+
+# -- Pod annotations.
+podAnnotations: {}
+
+# -- Pod security context.
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+# -- Container security context.
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# -- Container resource requests and limits.
+resources: {}
+
+# -- Node selector for pod scheduling.
+nodeSelector: {}
+
+# -- Tolerations for pod scheduling.
+tolerations: []
+
+# -- Topology spread constraints for pod scheduling.
+topologySpreadConstraints: []
+
+# -- Affinity rules for pod scheduling.
+affinity: {}

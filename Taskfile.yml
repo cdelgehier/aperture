@@ -57,10 +57,21 @@ tasks:
     cmds:
       - |
         if [ -f helm/aperture/Chart.yaml ]; then
+          helm lint helm/aperture
           helm unittest --strict helm/aperture
         else
           echo "No Helm chart yet; skipping Helm tests"
         fi
+
+  "helm:docs":
+    desc: Generate Helm chart documentation
+    cmd: helm-docs --chart-search-root helm --template-files README.md.gotmpl
+
+  "helm:docs:check":
+    desc: Check Helm chart documentation is up to date
+    cmds:
+      - task: "helm:docs"
+      - git diff --exit-code helm/aperture/README.md
 
   test:
     desc: Run all test suites
@@ -74,4 +85,5 @@ tasks:
       - task: lint
       - task: "type:check"
       - task: "fmt:check"
+      - task: "helm:docs:check"
       - task: test

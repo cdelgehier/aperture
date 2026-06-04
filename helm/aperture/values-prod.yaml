@@ -1,0 +1,39 @@
+replicaCount: 2
+
+pdb:
+  enabled: true
+  minAvailable: 1
+
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: aperture
+
+serviceAccount:
+  annotations:
+    # Example for EKS IRSA. Replace it with the annotation used by your cluster.
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT:role/aperture-irsa-role
+
+aperture:
+  serviceName: aperture-prod
+  logLevel: info
+  cacheBackend: redis
+
+redis:
+  url: redis://aperture-redis.example:6379/0
+
+auth:
+  mode: api_key
+  apiKeys:
+    existingSecret: aperture-api-keys
+    existingSecretKey: APT_API_KEYS
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 512Mi

@@ -1,0 +1,25 @@
+{{- if .Values.gatewayApi.httpRoute.enabled -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "aperture.fullname" . }}
+  labels:
+    {{- include "aperture.labels" . | nindent 4 }}
+spec:
+  {{- with .Values.gatewayApi.httpRoute.hostnames }}
+  hostnames:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  parentRefs:
+    {{- toYaml .Values.gatewayApi.httpRoute.parentRefs | nindent 4 }}
+  rules:
+    {{- range .Values.gatewayApi.httpRoute.rules }}
+    - matches:
+      {{- with .matches }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      backendRefs:
+        - name: {{ include "aperture.fullname" $ }}
+          port: {{ $.Values.service.port }}
+    {{- end }}
+{{- end }}

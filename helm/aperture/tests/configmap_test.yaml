@@ -1,0 +1,38 @@
+suite: configmap
+templates:
+  - templates/env-configmap.yaml
+tests:
+  - it: renders default application settings as APT environment variables
+    asserts:
+      - equal:
+          path: data.APT_SERVICE_NAME
+          value: aperture
+      - equal:
+          path: data.APT_CACHE_BACKEND
+          value: memory
+      - equal:
+          path: data.APT_AUTH_MODE
+          value: "off"
+
+  - it: renders external redis settings as APT environment variables
+    set:
+      aperture.cacheBackend: redis
+      redis.url: redis://redis.internal:6379/0
+    asserts:
+      - equal:
+          path: data.APT_CACHE_BACKEND
+          value: redis
+      - equal:
+          path: data.APT_REDIS_URL
+          value: redis://redis.internal:6379/0
+
+  - it: renders prod settings from prod values
+    values:
+      - ../values-prod.yaml
+    asserts:
+      - equal:
+          path: data.APT_SERVICE_NAME
+          value: aperture-prod
+      - equal:
+          path: data.APT_AUTH_MODE
+          value: api_key
