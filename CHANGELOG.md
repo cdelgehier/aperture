@@ -1,3 +1,9 @@
+## v0.5.1 (2026-06-04)
+
+### Fix
+
+- **ci**: disable helm plugin verification
+
 ## v0.5.0 (2026-06-04)
 
 ### Feat
