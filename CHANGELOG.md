@@ -1,3 +1,9 @@
+## v0.3.0 (2026-06-04)
+
+### Feat
+
+- add cache store  abstraction
+
 ## v0.2.1 (2026-06-02)
 
 ### Fix
