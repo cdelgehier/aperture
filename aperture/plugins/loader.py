@@ -10,6 +10,7 @@ from typing import Any
 
 from fastapi import APIRouter
 
+from aperture.cache.store import CacheStore
 from aperture.settings import PluginConfig
 
 
@@ -21,6 +22,8 @@ class PluginContext:
     settings: dict[str, Any]
     #: URL prefix used when the plugin is mounted in the API.
     prefix: str
+    #: Shared cache store available to plugins.
+    cache: CacheStore | None = None
 
 
 @dataclass(frozen=True)
@@ -49,6 +52,7 @@ class PluginLoadError:
 
 def load_plugins(
     plugin_configs: dict[str, PluginConfig],
+    cache: CacheStore | None = None,
 ) -> tuple[list[LoadedPlugin], list[PluginLoadError]]:
     """Load enabled plugins and keep failures as data.
 
@@ -73,7 +77,11 @@ def load_plugins(
             create_router = module.create_router
 
             # Give the plugin only its own settings and mount prefix.
-            context = PluginContext(settings=config.config, prefix=config.prefix)
+            context = PluginContext(
+                settings=config.config,
+                prefix=config.prefix,
+                cache=cache,
+            )
 
             # Ask the plugin to build its FastAPI router.
             router = create_router(context)

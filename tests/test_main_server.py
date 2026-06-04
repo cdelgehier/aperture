@@ -6,6 +6,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from aperture.cache.store import MemoryCacheStore
 from aperture.main import create_app, main
 from aperture.settings import Settings
 
@@ -26,6 +27,26 @@ def test_lifespan_binds_settings(settings: Settings) -> None:
 
     with TestClient(app):
         assert app.state.settings is settings
+
+
+def test_lifespan_binds_cache_store(settings: Settings) -> None:
+    """The app lifespan stores the configured cache in app state."""
+
+    app = create_app(settings)
+
+    with TestClient(app):
+        assert isinstance(app.state.cache, MemoryCacheStore)
+
+
+def test_lifespan_closes_cache_store(settings: Settings) -> None:
+    """The app lifespan closes the cache store on shutdown."""
+
+    app = create_app(settings)
+
+    with TestClient(app):
+        cache = app.state.cache
+
+    assert cache.closed is True
 
 
 @pytest.mark.parametrize(

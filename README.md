@@ -163,6 +163,39 @@ flowchart LR
 Local runs get readable console logs. Containers get JSON logs for log
 collectors.
 
+## Cache Contract
+
+Aperture gives plugins one shared async cache store. The default backend is
+memory. Redis can be enabled with settings.
+
+```mermaid
+flowchart TD
+    A["Plugin route"] --> B{"nocache?"}
+    B -->|true| E["Fetch live data"]
+    B -->|false| C["Read cache"]
+    C --> D{"Cache hit?"}
+    D -->|yes| G["Return cached SelectItems"]
+    D -->|no| E
+    E --> F["Write cache with TTL"]
+    F --> H["Return fresh SelectItems"]
+```
+
+Cache keys use this shape:
+
+```text
+plugin:{plugin}:resource:{resource}:scope:{scope...}:params:{hash(params)}
+```
+
+The plugin name is always part of the key. Scope segments are chosen by the
+plugin, so a cloud plugin can include account and region while a GitLab plugin
+can include a group or namespace. Aperture does not use legacy Compass Redis
+keys by default.
+
+Plugins choose the TTL that fits each resource. Query parameters that only
+change display, like empty options or filtering, should stay out of cache keys.
+Synthetic empty select options should be added after cache reads and never
+stored in cache.
+
 ## Test Rules
 
 - Tests use `pytest`.

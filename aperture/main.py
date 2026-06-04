@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI, HTTPException
 
+from aperture.cache.store import create_cache_store
 from aperture.logger import configure_logging, get_logger
 from aperture.models.select_item import SelectItem
 from aperture.plugins.loader import load_plugins
@@ -24,15 +25,28 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         """Store app state when the service starts."""
 
+        # Keep resolved settings in app state so routes can read runtime config.
         app.state.settings = resolved_settings
-        plugins, plugin_errors = load_plugins(resolved_settings.plugins)
+
+        # Create the shared cache before plugins, so plugin routers can use it.
+        app.state.cache = create_cache_store(resolved_settings)
+
+        # Load plugins with the shared cache in their context.
+        plugins, plugin_errors = load_plugins(
+            resolved_settings.plugins,
+            cache=app.state.cache,
+        )
         app.state.plugins = plugins
         app.state.plugin_errors = plugin_errors
         for plugin in plugins:
             app.include_router(plugin.router, prefix=f"/api/v1{plugin.prefix}")
         log.info("aperture started", plugins=[plugin.name for plugin in plugins])
-        yield
-        log.info("aperture stopped")
+        try:
+            yield
+        finally:
+            # Always close cache resources when FastAPI stops the lifespan.
+            await app.state.cache.close()
+            log.info("aperture stopped")
 
     app = FastAPI(
         title="Aperture",

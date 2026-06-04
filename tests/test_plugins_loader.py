@@ -5,6 +5,7 @@ from types import ModuleType
 
 from fastapi import APIRouter
 
+from aperture.cache.store import MemoryCacheStore
 from aperture.plugins.loader import PluginContext, load_plugins
 from aperture.settings import PluginConfig
 
@@ -13,12 +14,14 @@ def test_load_plugins_loads_enabled_plugin() -> None:
     """The loader imports an enabled plugin module."""
 
     plugin_module = ModuleType("tests.stub_plugin")
+    cache = MemoryCacheStore()
 
     def create_router(context: PluginContext) -> APIRouter:
         """Stub router factory used by this test."""
 
         assert context.settings == {"key": "value"}
         assert context.prefix == "/stub"
+        assert context.cache is cache
         return APIRouter()
 
     # Stub: the module gives the loader the router factory it expects.
@@ -33,7 +36,8 @@ def test_load_plugins_loads_enabled_plugin() -> None:
                     prefix="/stub",
                     config={"key": "value"},
                 )
-            }
+            },
+            cache=cache,
         )
     finally:
         sys.modules.pop("tests.stub_plugin", None)
