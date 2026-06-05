@@ -1,3 +1,9 @@
+## v0.6.1 (2026-06-05)
+
+### Fix
+
+- **ci**: keep generated helm docs in version bumps
+
 ## v0.6.0 (2026-06-04)
 
 ### Feat

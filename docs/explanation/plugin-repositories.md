@@ -89,7 +89,7 @@ The Aperture core image contains only the core runtime and built-in plugins.
 A business plugin repository can publish its own derived image:
 
 ```dockerfile
-FROM ghcr.io/cdelgehier/aperture:0.6.0
+FROM ghcr.io/cdelgehier/aperture:0.6.1
 
 COPY aperture_plugin_gitlab /app/aperture_plugin_gitlab
 ```

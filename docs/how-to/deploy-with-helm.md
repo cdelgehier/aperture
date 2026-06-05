@@ -23,7 +23,7 @@ Install the published OCI chart:
 ```bash
 helm upgrade --install aperture \
   oci://ghcr.io/cdelgehier/charts/aperture \
-  --version 0.6.0
+  --version 0.6.1
 ```
 
 List available chart versions with `crane`.
@@ -91,7 +91,7 @@ Aperture plugins must be importable by Python at runtime.
 Create a derived image:
 
 ```dockerfile
-FROM ghcr.io/cdelgehier/aperture:0.6.0
+FROM ghcr.io/cdelgehier/aperture:0.6.1
 
 COPY aperture_plugin_gitlab /app/aperture_plugin_gitlab
 ```
