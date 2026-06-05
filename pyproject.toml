@@ -37,6 +37,7 @@ version_files = [
     "helm/aperture/Chart.yaml:^appVersion",
     "helm/aperture/README.md.gotmpl:ghcr.io/cdelgehier/aperture:",
     "helm/aperture/README.md.gotmpl:--version ",
+    "helm/aperture/README.md:--version ",
     "docs/reference/plugin-contract.md:ghcr.io/cdelgehier/aperture:",
     "docs/how-to/deploy-with-helm.md:--version ",
     "docs/how-to/deploy-with-helm.md:ghcr.io/cdelgehier/aperture:",
